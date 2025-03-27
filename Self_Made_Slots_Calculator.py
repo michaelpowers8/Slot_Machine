@@ -1,17 +1,15 @@
 import hmac
-from tkinter import Tk,Frame,Button,Label,RIGHT,BOTTOM,CENTER
 import hashlib
 import random
 import time
 import string
 import sys
+import random
+from tkinter import Tk,Frame,Button,Label,RIGHT,BOTTOM,CENTER
 from os import system
-sys.path.append("c:/Users/michael/AppData/Local/Programs/Python/Python312/Lib/site-packages")
 from pandas.io.formats.style import Styler
 from IPython.display import clear_output
 from PIL import Image, ImageTk, ImageFile
-import random
-from PIL import Image, ImageTk
 
 def to_superscript(num):
     superscript_map = {
@@ -177,8 +175,11 @@ def increase_credits(target_balance: int, current_balance: int, increment: int, 
         current_balance += increment
         if current_balance > target_balance:
             current_balance = target_balance
-        label.config(text=f"Credits per Spin: {bet_amount:,}\tCredits: {int(current_balance):,}")
-        root.after(30, increase_credits, target_balance, current_balance, increment, root, label)  # Delay for smooth animation
+        try:
+            label.config(text=f"Credits per Spin: {bet_amount:,}\tCredits: {int(current_balance):,}")
+            root.after(30, increase_credits, target_balance, current_balance, increment, root, label)  # Delay for smooth animation
+        except:
+            pass
     else:
         label.config(text=f"Credits per Spin: {bet_amount:,}\tCredits: {int(current_balance):,}")
 
@@ -187,7 +188,7 @@ def provably_fair_calculation_receipt(server_seed:str,client_seed:str,nonce:int,
     pictures = ['cherry.jpg', 'lemon.jpg', 'bell.jpg', 'clover.jpg', 'diamond.jpg', 'star.jpg', 'caterpillar.jpg', 'butterfly.jpg', 'angel_butterfly.jpg']
     spin_result:Styler = seeds_to_results(server_seed,client_seed,nonce)
     weights:list[float] = [0.2, 0.18, 0.15, 0.13, 0.12, 0.1, 0.07, 0.045, 0.005]
-    multipliers:list[float] = [1.3, 2.25, 3.00, 5.00, 10.0, 25.0,  50.0, 125.0, 5000]
+    multipliers:list[float] = [1.3, 2.25, 3.00, 5.00, 10.0, 25.0, 50.0, 125.0, 5000]
     first_hex:str = seeds_to_hexadecimals(server_seed,client_seed,nonce)[0]
     second_hex:str = seeds_to_hexadecimals(server_seed,client_seed,nonce)[1]
     first_bytes:list[int] = hexadecimal_to_bytes(first_hex)
@@ -205,7 +206,7 @@ def provably_fair_calculation_receipt(server_seed:str,client_seed:str,nonce:int,
         ]
     if True:
         output:str = f"Fluttering Riches has been created for fun and fair entertainment. Every single outcome can be verified and reverse engineered. An example is provided below. To start, know that these are the icons and getting 3 in a row of any of these result in payout multiplier increases by the given amounts:\n"
-        output += f"\t0 -> 🍒 -> x{multipliers[0]},\n\t1 -> 🍋 -> x{multipliers[1]},\n\t2 -> 🔔 -> x{multipliers[2]},\n\t3 -> 🍀 -> x{multipliers[3]},\n\t4 -> 💎 -> x{multipliers[4]},\n\t5 -> ⭐ -> x{multipliers[5]},\n\t6 -> 🐛 -> x{multipliers[6]},\n\t7 -> 🦋 -> x{multipliers[7]}\n"
+        output += f"\t0 -> 🍒 -> x{multipliers[0]},\n\t1 -> 🍋 -> x{multipliers[1]},\n\t2 -> 🔔 -> x{multipliers[2]},\n\t3 -> 🍀 -> x{multipliers[3]},\n\t4 -> 💎 -> x{multipliers[4]},\n\t5 -> ⭐ -> x{multipliers[5]},\n\t6 -> 🐛 -> x{multipliers[6]},\n\t7 -> 🦋 -> x{multipliers[7]}\n\t7 -> 🦋🦋 -> x{multipliers[8]}\n"
         output += f"The maximum number of ways to win in a single spin is 5 (3 in a row horizontally across, and 3 in a row diagonally). Your multiplier increases when you have 3 in a row going across, and diagonally. Getting 3 in a row vertically does NOT win any prizes.\n"
         output += f"Here is a full breakdown of how the results are calculated while using your first spin as an example:\n\n"
         output += f"Provably Fair Calculation for Spin {nonce:,.0f}\n"
@@ -310,8 +311,10 @@ def exit_fullscreen(root:Tk,event=None):
 def display_results(slot_labels: list[Label], results: list[list[str]], end_time: float, root: Tk):
     global nonce, balance, bet_amount, insufficient_funds_label, balance_label, server_seed, client_seed, nonce
     system('cls')
-    print(f"{server_seed}:{client_seed}:{nonce}:{0}")
-    print(provably_fair_calculation_receipt(server_seed, client_seed, nonce, bet_amount))
+    with open("Slots_Results.txt","a",encoding='utf-8') as slots_results_file:
+        slots_results_file.write(f"{server_seed}:{client_seed}:{nonce}:{0}\n")
+        slots_results_file.write(provably_fair_calculation_receipt(server_seed, client_seed, nonce, bet_amount))
+        slots_results_file.write(f"\n\n{'-'*100}\n\n")
     delay:int = int((end_time-time.time()+0.05)*1000)
     if bet_amount > balance:
         return
@@ -346,40 +349,41 @@ def display_results(slot_labels: list[Label], results: list[list[str]], end_time
     spin_animation(slot_labels, end_time, root)  # Ensure all parameters are passed correctly
     root.after(delay, update_images)  # Add a delay based on `end_time` in milliseconds
 
-server_seed:str = generate_server_seed()
-client_seed:str = generate_client_seed()
-nonce:int = 1
-balance:int = 10_000
-bet_amount:int = 200
+if __name__ == "__main__":
+    server_seed:str = generate_server_seed()
+    client_seed:str = generate_client_seed()
+    nonce:int = 1
+    balance:int = 10_000
+    bet_amount:int = 200
 
-root = Tk()
-root.title("FLUTTERING RICHES")
-root.configure(background='white')
+    root = Tk()
+    root.title("FLUTTERING RICHES")
+    root.configure(background='white')
 
-make_fullscreen(root)
-root.bind("<F11>", make_fullscreen)
-# root.bind("<Escape>", exit_fullscreen)
-balance_label = Label(root,text=f"FLUTTERING RICHES",activebackground='white',font=('Arial',40,'bold'),background='white',justify=CENTER).pack(side='top',pady=50)
+    make_fullscreen(root)
+    root.bind("<F11>", make_fullscreen)
+    # root.bind("<Escape>", exit_fullscreen)
+    balance_label = Label(root,text=f"FLUTTERING RICHES",activebackground='white',font=('Arial',40,'bold'),background='white',justify=CENTER).pack(side='top',pady=50)
 
-frame = Frame(root,background='white')
-frame.pack(pady=20)
+    frame = Frame(root,background='white')
+    frame.pack(pady=20)
 
-slot_labels = []
-for row in range(3):
-    for col in range(3):
-        label = Label(frame,background='white',activebackground='white',foreground='white')
-        label.grid(row=row, column=col, padx=10, pady=10)
-        slot_labels.append(label)
+    slot_labels = []
+    for row in range(3):
+        for col in range(3):
+            label = Label(frame,background='white',activebackground='white',foreground='white')
+            label.grid(row=row, column=col, padx=10, pady=10)
+            slot_labels.append(label)
 
-# Display initial slots
-spin(slot_labels)
+    # Display initial slots
+    spin(slot_labels)
 
-spin_button:Button = Button(root, text="Spin", command=lambda: display_results(slot_labels,seeds_to_results(server_seed,client_seed,nonce),time.time()+2,root), font=("Helvetica 50 bold"),
-                        bg="blue", fg="white", activebackground="blue", activeforeground="white",
-                        relief="raised", bd=5)
-spin_button.pack(side=RIGHT, padx=200, pady=50)  # Moved to the right side and up slightly
+    spin_button:Button = Button(root, text="Spin", command=lambda: display_results(slot_labels,seeds_to_results(server_seed,client_seed,nonce),time.time()+2,root), font=("Helvetica 50 bold"),
+                            bg="blue", fg="white", activebackground="blue", activeforeground="white",
+                            relief="raised", bd=5)
+    spin_button.pack(side=RIGHT, padx=200, pady=50)  # Moved to the right side and up slightly
 
-balance_label:Label = Label(root,text=f"Credits per Spin: {bet_amount:,}\tCredits: {balance:,}",activebackground='white',font=('Arial',24,'bold'),background='white',justify=CENTER)
-balance_label.pack(side=RIGHT,pady=10,padx=0)
-insufficient_funds_label = Label(root,text="Insufficient Funds!").destroy()
-root.mainloop()
+    balance_label:Label = Label(root,text=f"Credits per Spin: {bet_amount:,}\tCredits: {balance:,}",activebackground='white',font=('Arial',24,'bold'),background='white',justify=CENTER)
+    balance_label.pack(side=RIGHT,pady=10,padx=0)
+    insufficient_funds_label = Label(root,text="Insufficient Funds!").destroy()
+    root.mainloop()
